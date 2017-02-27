@@ -27,14 +27,6 @@ wsProducer (WS.Connection socket) = CRA.produce \emit -> do
   socket.onmessage $= \event -> do
     emit $ Left $ WS.runMessage (WS.runMessageEvent event)
 
-  -- This part would be unnecessary in the real world, but since we're just
-  -- using the echo service we need to send something on init so that we have
-  -- something to receive!
-  socket.onopen $= \_ -> do
-    socket.send (WS.Message "hello")
-    socket.send (WS.Message "something")
-    socket.send (WS.Message "goodbye")
-
 -- A consumer coroutine that takes the `query` function from our component IO
 -- record and sends `AddMessage` queries in when it receives inputs from the
 -- producer.
