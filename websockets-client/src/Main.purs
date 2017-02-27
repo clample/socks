@@ -15,13 +15,15 @@ import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
 import Log as Log
 import WebSocket as WS
-
+import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Eff.Class (liftEff)
+    
 -- A producer coroutine that emits messages that arrive from the websocket.
 wsProducer
   :: forall eff
-   . CR.Producer String (Aff (avar :: AVAR, err :: EXCEPTION, ws :: WS.WEBSOCKET | eff)) Unit
-wsProducer = CRA.produce \emit -> do
-  WS.Connection socket <- WS.newWebSocket (WS.URL "ws://127.0.0.1:1855") []
+   . WS.Connection -> CR.Producer String (Aff (avar :: AVAR, err :: EXCEPTION, ws :: WS.WEBSOCKET | eff)) Unit
+wsProducer (WS.Connection socket) = CRA.produce \emit -> do
+  
   socket.onmessage $= \event -> do
     emit $ Left $ WS.runMessage (WS.runMessageEvent event)
 
@@ -44,12 +46,26 @@ wsConsumer query = CR.consumer \msg -> do
   query $ H.action $ Log.AddMessage msg
   pure Nothing
 
-main :: Eff (HA.HalogenEffects (ws :: WS.WEBSOCKET)) Unit
-main = HA.runHalogenAff do
-  body <- HA.awaitBody
-  io <- runUI Log.component unit body
+messageSender
+  :: forall eff
+   . WS.Connection
+  -> CR.Consumer Log.Message (Aff (HA.HalogenEffects (console :: CONSOLE, ws :: WS.WEBSOCKET | eff))) Unit
+messageSender (WS.Connection socket) = CR.consumer \msg -> do
+  case msg of
+    Log.SendMessage' msg' -> do
+      log $ "Sending message " <> msg'
+      liftEff $ socket.send (WS.Message msg')
+  pure Nothing
 
-  -- Connecting the consumer to the producer initializes both, opening the
-  -- websocket connection and feeding queries back to our component as messages
-  -- are received.
-  CR.runProcess (wsProducer CR.$$ wsConsumer io.query)
+main :: Eff (HA.HalogenEffects (ws :: WS.WEBSOCKET, console :: CONSOLE)) Unit
+main = do
+  connection <- WS.newWebSocket (WS.URL "ws://127.0.0.1:1855") []
+  HA.runHalogenAff do
+    body <- HA.awaitBody
+    io <- runUI Log.component unit body
+  
+    io.subscribe $ messageSender connection
+    -- Connecting the consumer to the producer initializes both, opening the
+    -- websocket connection and feeding queries back to our component as messages
+    -- are received.
+    CR.runProcess (wsProducer connection CR.$$ wsConsumer io.query)
