@@ -1,0 +1,26 @@
+{
+  "name": "websockets-client",
+  "authors": [
+    "chrislample <clample@crimson.ua.edu>"
+  ],
+  "description": "Example project using websockets",
+  "main": "./src/Main.purs",
+  "keywords": [
+    "websockets"
+  ],
+  "license": "MIT",
+  "homepage": "github.com/clample/websockets-example",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "purescript-halogen": "git://github.com/slamdata/purescript-halogen.git#master",
+    "purescript-websocket-simple": "^1.0.1",
+    "purescript-aff-coroutines": "^4.0.0"
+  }
+}

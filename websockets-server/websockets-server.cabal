@@ -1,4 +1,4 @@
-name:                websockets-practice
+name:                websockets-server
 version:             0.1.0.0
 -- synopsis:
 -- description:
@@ -10,29 +10,30 @@ maintainer:          clample@crimson.ua.edu
 copyright:           2017 Chris Lample
 category:            Web
 build-type:          Simple
-extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
   build-depends:       base >= 4.7 && < 5
+                     , websockets ==0.10.*
+                     , text == 1.2.*
   default-language:    Haskell2010
 
-executable websockets-practice-exe
+executable websockets-server-exe
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , websockets-practice
+                     , websockets-server
   default-language:    Haskell2010
 
-test-suite websockets-practice-test
+test-suite websockets-server-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
-                     , websockets-practice
+                     , websockets-server
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

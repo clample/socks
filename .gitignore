@@ -1,0 +1,6 @@
+output/
+.DS_Store
+.stack-work/
+bower_components/
+node_modules/
+websockets-client/dist/example.js
