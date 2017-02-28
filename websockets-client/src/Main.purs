@@ -19,7 +19,7 @@ messageSender
   -> CR.Consumer Log.Message (Aff (HA.HalogenEffects (ws :: WS.WEBSOCKET | eff))) Unit
 messageSender (WS.Connection socket) = CR.consumer \msg -> do
   case msg of
-    Log.SendMessage' msg' -> do
+    Log.SendMessage' msg' ->
       liftEff $ socket.send (WS.Message msg')
   pure Nothing
 
