@@ -11,17 +11,15 @@ import Halogen.Aff as HA
 import Halogen.VDom.Driver (runUI)
 import Log as Log
 import WebSocket as WS
-import Control.Monad.Aff.Console (CONSOLE, log)
 import Control.Monad.Eff.Class (liftEff)
 
 messageSender
   :: forall eff
    . WS.Connection
-  -> CR.Consumer Log.Message (Aff (HA.HalogenEffects (console :: CONSOLE, ws :: WS.WEBSOCKET | eff))) Unit
+  -> CR.Consumer Log.Message (Aff (HA.HalogenEffects (ws :: WS.WEBSOCKET | eff))) Unit
 messageSender (WS.Connection socket) = CR.consumer \msg -> do
   case msg of
     Log.SendMessage' msg' -> do
-      log $ "Sending message " <> msg'
       liftEff $ socket.send (WS.Message msg')
   pure Nothing
 
@@ -36,7 +34,7 @@ messageListener (WS.Connection socket) query =
     HA.runHalogenAff <<< query <<< H.action <<< Log.AddMessage $  msg
 
 
-main :: Eff (HA.HalogenEffects (ws :: WS.WEBSOCKET, console :: CONSOLE)) Unit
+main :: Eff (HA.HalogenEffects (ws :: WS.WEBSOCKET)) Unit
 main = do
   connection <- WS.newWebSocket (WS.URL "ws://127.0.0.1:1855") []
   HA.runHalogenAff do
